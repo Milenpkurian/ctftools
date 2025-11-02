@@ -5,21 +5,31 @@ public class Binary
 {
     public static string ToText(string inputBytes)
     {
-        var bytes = inputBytes.Split(" ");
-        bool addSpace = bytes.Length == 1 && inputBytes.Length != 8;
+        if (inputBytes is null)
+            throw new ArgumentNullException(nameof(inputBytes));
 
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < inputBytes.Length; i++)
+        if (string.IsNullOrWhiteSpace(inputBytes))
+            return string.Empty;
+
+        var bits = new string(inputBytes.Where(c => !char.IsWhiteSpace(c)).ToArray());
+
+        if(bits.Length == 0)
+            return string.Empty;
+
+        if(bits.Any(c => c!='0' && c!='1'))
+            throw new ArgumentException("Input string is not a valid binary string.");
+
+        if (bits.Length % 8 != 0)
+            throw new ArgumentException("Input length must be a multiple of 8 after removing whitespace.", nameof(inputBytes));
+
+        var result = new StringBuilder(bits.Length / 8);
+        for (int i = 0; i < bits.Length; i += 8)
         {
-            if (addSpace && i % 8 == 0)
-            {
-                result.Append(" ");
-            }
-            result.Append(inputBytes[i]);
+            var byteString = bits.Substring(i, 8);
+            int value = Convert.ToInt32(byteString, 2);
+            result.Append(Convert.ToChar(value));
         }
 
-        return string.Concat(result.ToString().Split(" ")
-            .Where(bin => !string.IsNullOrEmpty(bin))
-            .Select(bin => Convert.ToChar(Convert.ToInt32(bin, 2))));
+        return result.ToString();
     }
 }
